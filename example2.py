@@ -8,7 +8,11 @@ import os.path
 SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
 # ID del calendario de días festivos de Venezuela
-HOLIDAY_CALENDAR_ID = "es.ve#holiday@group.v.calendar.google.com"
+HOLIDAY_CALENDAR_IDS = [
+    "family09967166610684889287@group.calendar.google.com",
+    "es.ve#holiday@group.v.calendar.google.com",
+    # Agrega más IDs aquí
+]
 
 
 def main():
@@ -30,24 +34,25 @@ def main():
     now = datetime.datetime.now(datetime.timezone.utc)
     now = now.replace(microsecond=0).isoformat()
     print("Días festivos próximos en Venezuela:")
-    events_result = (
-        service.events()
-        .list(
-            calendarId=HOLIDAY_CALENDAR_ID,
-            timeMin=now,
-            maxResults=20,
-            singleEvents=True,
-            orderBy="startTime",
+    for HOLIDAY_CALENDAR_ID in HOLIDAY_CALENDAR_IDS:
+        events_result = (
+            service.events()
+            .list(
+                calendarId=HOLIDAY_CALENDAR_ID,
+                timeMin=now,
+                maxResults=20,
+                singleEvents=True,
+                orderBy="startTime",
+            )
+            .execute()
         )
-        .execute()
-    )
-    events = events_result.get("items", [])
+        events = events_result.get("items", [])
 
-    if not events:
-        print("No hay días festivos próximos encontrados.")
-    for event in events:
-        start = event["start"].get("date", event["start"].get("dateTime"))
-        print(start, event["summary"])
+        if not events:
+            print("No hay días festivos próximos encontrados.")
+        for event in events:
+            start = event["start"].get("date", event["start"].get("dateTime"))
+            print(start, event["summary"])
 
 
 if __name__ == "__main__":
